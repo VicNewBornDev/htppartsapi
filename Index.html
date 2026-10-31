@@ -1,0 +1,38 @@
+
+<!doctype html>
+<html><head><meta charset="utf-8"><title>HTP API Demo - Hosted as Website</title>
+<style>
+body{font-family:Inter,sans-serif; max-width:900px; margin:20px auto; padding:20px; background:#f8fafc}
+pre{background:#1e293b; color:#e2e8f0; padding:15px; border-radius:8px; overflow:auto}
+.btn{padding:10px 16px; background:#0b57d0; color:white; border:none; border-radius:8px; cursor:pointer; margin:4px}
+.card{background:white; padding:15px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-top:15px}
+</style>
+</head><body>
+<h2>HTP Parts API - Hosted as Website Demo</h2>
+<p>This page is using <b>api.json</b> as a website API. No server code, just a static file.</p>
+<button class="btn" onclick="loadAPI()">Load api.json</button>
+<button class="btn" onclick="testBoard()">Test Control Board Chart</button>
+<div id="result"></div>
+
+<script>
+let apiData = null;
+async function loadAPI(){
+  // When you upload api.json to GitHub Pages / Azure Blob, change this URL to https://your-site.com/api.json
+  const r = await fetch('./api.min.json'); // using minified for production
+  apiData = await r.json();
+  document.getElementById('result').innerHTML = `<div class="card">
+    <h3>Loaded api.json</h3>
+    <p>Version: ${apiData.info.version} | Families: ${apiData.stats.families} | Models: ${apiData.stats.models} | Parts: ${apiData.stats.parts_entries}</p>
+    <p>Chart: PHP199-119=${apiData.control_board_chart.mapping['PHP199-119']}, PHP260-119=${apiData.control_board_chart.mapping['PHP260-119']}, PHP320-119=${apiData.control_board_chart.mapping['PHP320-119']}, PHP399-119=${apiData.control_board_chart.mapping['PHP399-119']}</p>
+    <pre>${JSON.stringify(apiData.stats, null, 2)}</pre>
+  </div>`;
+}
+
+async function testBoard(){
+  if(!apiData) await loadAPI();
+  const model = apiData.catalog.find(f=>f.family==='Phoenix Plus').models.find(m=>m.modelName.includes('PHP260-119 - After'));
+  const board = model.parts.find(p=>p.desc.includes('CONTROL BOARD'));
+  document.getElementById('result').innerHTML += `<div class="card"><h3>Test: PHP260-119 - After 9/1/2021</h3><p>Control Board: <b>${board.part}</b> (${board.desc})</p><p>Total parts: ${model.parts.length}</p></div>`;
+}
+</script>
+</body></html>
